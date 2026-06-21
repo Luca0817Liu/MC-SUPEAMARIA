@@ -1,0 +1,6 @@
+{
+  "name": "Minecraft Mario",
+  "description": "A Super Mario retro game rendered in a block-based Minecraft style using Canvas, featuring custom block terrain, items (Mushrooms, Stars, Fire Flowers), MC mobs (Zombies, Turtles, Creepers, Ender Dragon BOSS), 4 distinct levels (1-1 to 1-4), Web Audio retro sound effects, and responsive mobile + desktop controls.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

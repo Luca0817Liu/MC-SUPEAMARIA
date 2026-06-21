@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@theme {
+  --font-retro: "Press Start 2P", "Courier New", monospace;
+  --font-pixel: "VT323", monospace;
+  --font-sans: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+/* Custom retro styling enhancements */
+body {
+  font-family: var(--font-sans);
+  background-color: #0f0f12;
+}
+
+/* Custom horizontal marquee keyframes in CSS */
+@keyframes marquee {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-marquee {
+  display: inline-block;
+  white-space: nowrap;
+  animation: marquee var(--marquee-duration, 30s) linear infinite;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #111115;
+}
+::-webkit-scrollbar-thumb {
+  background: #3f3f46;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #52525b;
+}
