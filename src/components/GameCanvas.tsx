@@ -433,6 +433,7 @@ export default function GameCanvas({
             if (c === 50) { blockType = 'QUESTION_BLOCK'; item = 'FLOWER'; }
             if (c === 60 || c === 61 || c === 62) { blockType = 'OBSIDIAN'; }
             if (c === 85) { blockType = 'QUESTION_BLOCK'; item = 'STAR'; }
+            if (c === 141) { blockType = 'QUESTION_BLOCK'; item = 'FLOWER'; }
           }
 
           // Massive Lava hazard zones. Create step stone bridges
@@ -727,15 +728,23 @@ export default function GameCanvas({
     
     // Flag elements: bounce the block briefly
     if (block.type === 'QUESTION_BLOCK') {
+      if (block.isHit) return; // Prevent double trigger during animation
+
       block.isHit = true;
       block.hitTimer = 10;
-      block.type = 'EMPTY_BLOCK'; // turns into cobblestone/bedrock style
 
-      audio.playSFX('BLOCK_HIT');
-
-      // Spawn item
-      if (block.containsItem) {
-        spawnItem(block.x, block.y - 1, block.containsItem);
+      // Infinite block for Ender Dragon boss arena to prevent softlocking!
+      if (block.x === 141) {
+        audio.playSFX('BLOCK_HIT');
+        if (block.containsItem) {
+          spawnItem(block.x, block.y - 1, block.containsItem);
+        }
+      } else {
+        block.type = 'EMPTY_BLOCK'; // turns into cobblestone/bedrock style
+        audio.playSFX('BLOCK_HIT');
+        if (block.containsItem) {
+          spawnItem(block.x, block.y - 1, block.containsItem);
+        }
       }
     } else if (block.type === 'BRICK' || block.type === 'COAL_ORE') {
       if (g.marioForm !== 'SMALL') {
@@ -800,6 +809,30 @@ export default function GameCanvas({
     g.actors = g.actors.filter((act) => {
       // Delete dead offscreen mobs
       if (act.y > g.worldRows * g.gridSize + 100) return false;
+
+      // Special handling for boss fireballs to fly straight, check collision with player, and clear off-screen
+      if (act.type === 'BOSS_FIRE') {
+        act.x += act.vx;
+        act.y += act.vy;
+
+        // Draw magenta particle trail
+        if (Math.random() < 0.4) {
+          spawnParticles(act.x + 7, act.y + 7, 'FIRE', '#d946ef', 2);
+        }
+
+        // Damage player if colliding
+        const isColliding = getIntersection(p, act);
+        if (isColliding && !g.winSequence) {
+          handleHazardDamage();
+          return false; // destroy the fireball
+        }
+
+        // Keep or delete depending on screen bounds
+        if (act.x < g.cameraX - 100 || act.x > g.cameraX + 1100 || act.y < -100 || act.y > g.worldRows * g.gridSize + 100) {
+          return false;
+        }
+        return true;
+      }
 
       // Spawning rise step
       if (act.state === 'SPAWNING') {
@@ -1163,13 +1196,13 @@ export default function GameCanvas({
       const rowBottom = Math.floor((fb.y + 8) / g.gridSize);
 
       const blockBottom = getBlockAtGrid(colCell, rowBottom);
-      if (blockBottom && isSolid(blockBottom.type)) {
+      if (blockBottom && isSolid(blockBottom.type) && blockBottom.x !== 145) {
         fb.vy = -3.8; // bounce high!
         fb.y = rowBottom * g.gridSize - 9;
       }
 
       const blockSide = getBlockAtGrid(colCell, rowCell);
-      if (blockSide && isSolid(blockSide.type)) {
+      if (blockSide && isSolid(blockSide.type) && blockSide.x !== 145) {
         // Explode fireball impact!
         spawnParticles(fb.x, fb.y, 'FIRE', '#f97316', 5);
         return false;
