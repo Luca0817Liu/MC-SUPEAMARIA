@@ -65,13 +65,13 @@ export default function MainMenu({ onStartGame, highscore, isMuted, onToggleMute
   };
 
   return (
-    <div className="relative w-full min-h-screen bg-[#7299ff] flex flex-col items-center justify-center p-4 overflow-hidden font-sans border-8 border-[#3d3d3d]">
+    <div className="relative w-full min-h-screen bg-[#7299ff] flex flex-col items-center justify-center p-2 sm:p-4 overflow-hidden font-sans border-4 sm:border-8 border-[#3d3d3d]">
       {/* The sky decorations from the Vibrant Palette design */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         {/* Dynamic retro pixelated clouds from the design blueprint */}
         <div className="absolute top-16 left-12 w-32 h-10 bg-white/80 shadow-[12px_0_0_0_#fff,24px_0_0_0_#fff,0_12px_0_0_#fff,12px_12px_0_0_#fff] opacity-90"></div>
         <div className="absolute top-44 right-20 w-48 h-14 bg-white/80 shadow-[16px_0_0_0_#fff,32px_0_0_0_#fff,16px_16px_0_0_#fff] opacity-90 hidden sm:block"></div>
-        <div className="absolute bottom-32 left-1/3 w-28 h-8 bg-white/40 shadow-[12px_0_0_0_rgba(255,255,255,0.4),0_12px_0_0_rgba(255,255,255,0.4)] opacity-50"></div>
+        <div className="absolute bottom-32 left-1/3 w-28 h-8 bg-white/40 shadow-[12px_0_0_0_rgba(255,255,255,0.4),0_12px_0_0_rgba(255,255,255,0.4)] opacity-50 block md:hidden"></div>
         
         {/* Floating golden sparkling coins */}
         <div className="absolute top-24 right-1/4 w-4 h-4 bg-[#ffd700] border-2 border-[#b8860b] shadow-[inset_-2px_-2px_0_#daa520] animate-bounce"></div>
@@ -79,7 +79,7 @@ export default function MainMenu({ onStartGame, highscore, isMuted, onToggleMute
       </div>
 
       {/* Main Container */}
-      <div className="relative z-10 w-full max-w-4xl bg-[#3d3d3d]/95 border-4 border-white/80 p-6 sm:p-8 shadow-[12px_12px_0px_0px_rgba(0,0,0,0.5)] flex flex-col items-center">
+      <div className="relative z-10 w-full max-w-4xl bg-[#3d3d3d]/95 border-2 sm:border-4 border-white/80 p-4 sm:p-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,0.5)] sm:shadow-[12px_12px_0px_0px_rgba(0,0,0,0.5)] flex flex-col items-center">
         
         {/* Top bar with highscore and audio toggle */}
         <div className="w-full flex justify-between items-center mb-6 border-b-4 border-white/20 pb-4">
@@ -111,19 +111,19 @@ export default function MainMenu({ onStartGame, highscore, isMuted, onToggleMute
         </div>
 
         {/* Title Logo section with Super Mario Font Styled text and MC blocks */}
-        <div className="flex flex-col items-center justify-center text-center mb-8 relative">
+        <div className="flex flex-col items-center justify-center text-center mb-6 sm:mb-8 relative">
           {/* Blocky Super Title */}
           <div className="relative animate-[bounce_4s_infinite]">
-            <span className="block font-retro text-3xl sm:text-5xl text-[#ff3333] tracking-tight drop-shadow-[4px_4px_0px_#000]">
+            <span className="block font-retro text-2xl sm:text-4xl md:text-5xl text-[#ff3333] tracking-tight drop-shadow-[2px_2px_0px_#000] sm:drop-shadow-[4px_4px_0px_#000]">
               MINECRAFT
             </span>
             <div className="flex items-center justify-center gap-2 mt-1">
-              <span className="font-retro text-2xl sm:text-4xl text-[#ffd700] drop-shadow-[4px_4px_0px_#000] tracking-wide">
+              <span className="font-retro text-lg sm:text-2xl md:text-4xl text-[#ffd700] drop-shadow-[2px_2px_0px_#000] sm:drop-shadow-[4px_4px_0px_#000] tracking-wide">
                 SUPER MARIO
               </span>
             </div>
             {/* Minecraft Cube Badge */}
-            <span className="mt-3 inline-block px-4 py-1.5 bg-[#4caf50] text-[10px] font-retro text-white border-2 border-white/30 shadow-[4px_4px_0px_rgba(0,0,0,0.3)]">
+            <span className="mt-2.5 inline-block px-3 py-1 bg-[#4caf50] text-[9px] sm:text-[10px] font-retro text-white border-2 border-white/30 shadow-[3px_3px_0px_rgba(0,0,0,0.3)]">
               VIBRANT RETRO EDITION
             </span>
           </div>

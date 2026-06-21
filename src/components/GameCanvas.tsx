@@ -73,6 +73,16 @@ export default function GameCanvas({
     winSequence: false,
     winSequenceTimer: 0,
 
+    inSecretArea: false,
+    secretSavedState: null as {
+      blocks: Block[];
+      actors: Actor[];
+      playerX: number;
+      playerY: number;
+      cameraX: number;
+      worldCols: number;
+    } | null,
+
     keys: {
       left: false,
       right: false,
@@ -284,7 +294,7 @@ export default function GameCanvas({
             }
           } else if (selectedStage === '1-3') {
             // Sky Stage: lots of bottomless pits!
-            if ((c > 15 && c < 22) || (c > 45 && c < 52) || (c > 78 && c < 88) || (c > 110 && c < 125)) {
+            if ((c > 15 && c < 22) || (c > 45 && c < 52) || (c > 78 && c < 88) || (c > 110 && c < 117) || (c > 118 && c < 125)) {
               blockType = 'AIR';
             } else {
               blockType = 'GRASS';
@@ -305,7 +315,7 @@ export default function GameCanvas({
           if (r >= 13 && r <= 14) blockType = 'AIR';
           else if (selectedStage === '1-1' && !((c > 40 && c < 43) || (c > 85 && c < 89))) blockType = 'DIRT';
           else if (selectedStage === '1-2') blockType = 'STONE';
-          else if (selectedStage === '1-3' && !((c > 15 && c < 22) || (c > 45 && c < 52) || (c > 78 && c < 88) || (c > 110 && c < 125))) blockType = 'DIRT';
+          else if (selectedStage === '1-3' && !((c > 15 && c < 22) || (c > 45 && c < 52) || (c > 78 && c < 88) || (c > 110 && c < 117) || (c > 118 && c < 125))) blockType = 'DIRT';
           else if (selectedStage === '1-4' && !((c > 35 && c < 42) || (c > 75 && c < 82) || (c > 115 && c < 122))) blockType = 'OBSIDIAN';
         }
 
@@ -396,12 +406,50 @@ export default function GameCanvas({
             if (r === 10) blockType = 'PIPE_TOP_R';
           }
 
+          // Exit Pipe for secret room in 1-2
+          if (c === 80) {
+            if (r === 11 || r === 12) blockType = 'PIPE_BODY_L';
+            if (r === 10) blockType = 'PIPE_TOP_L';
+          }
+          if (c === 81) {
+            if (r === 11 || r === 12) blockType = 'PIPE_BODY_R';
+            if (r === 10) blockType = 'PIPE_TOP_R';
+          }
+
+          // Secret fake walkthrough cave wall blocks of COAL_ORE at columns 72-73
+          if ((c === 72 || c === 73) && (r === 9 || r === 10)) {
+            blockType = 'COAL_ORE';
+          }
+
         } else if (selectedStage === '1-3') {
           // 1-3 Sky stage: Floating platforms
           if (c === 165 && r <= 12 && r >= 3) {
             blockType = (r === 3) ? 'FLAG' : 'FLAG_POLE';
           }
           if (c === 165 && r === 12) blockType = 'BEDROCK';
+
+          // Pipes for secret room in 1-3
+          if (c === 30) {
+            if (r === 11 || r === 12) blockType = 'PIPE_BODY_L';
+            if (r === 10) blockType = 'PIPE_TOP_L';
+          }
+          if (c === 31) {
+            if (r === 11 || r === 12) blockType = 'PIPE_BODY_R';
+            if (r === 10) blockType = 'PIPE_TOP_R';
+          }
+          if (c === 60) {
+            if (r === 11 || r === 12) blockType = 'PIPE_BODY_L';
+            if (r === 10) blockType = 'PIPE_TOP_L';
+          }
+          if (c === 61) {
+            if (r === 11 || r === 12) blockType = 'PIPE_BODY_R';
+            if (r === 10) blockType = 'PIPE_TOP_R';
+          }
+
+          // Secret cloud illusion wall at cols 52-53
+          if ((c === 52 || c === 53) && (r === 8 || r === 9)) {
+            blockType = 'BRICK';
+          }
 
           // Floating cloud/brick cells
           if (r === 9) {
@@ -424,6 +472,24 @@ export default function GameCanvas({
           // 1-4 Nether Fortress & Ender Dragon
           if (c === 165 && r === 12) {
             blockType = 'END_PORTAL'; // Portal block rather than flagpole
+          }
+
+          // Green pipes for secret room in 1-4
+          if (c === 30) {
+            if (r === 11 || r === 12) blockType = 'PIPE_BODY_L';
+            if (r === 10) blockType = 'PIPE_TOP_L';
+          }
+          if (c === 31) {
+            if (r === 11 || r === 12) blockType = 'PIPE_BODY_R';
+            if (r === 10) blockType = 'PIPE_TOP_R';
+          }
+          if (c === 65) {
+            if (r === 11 || r === 12) blockType = 'PIPE_BODY_L';
+            if (r === 10) blockType = 'PIPE_TOP_L';
+          }
+          if (c === 66) {
+            if (r === 11 || r === 12) blockType = 'PIPE_BODY_R';
+            if (r === 10) blockType = 'PIPE_TOP_R';
           }
 
           // Dark walls made of Obsidian / Netherrack
@@ -478,14 +544,21 @@ export default function GameCanvas({
         { id: '20', type: 'TURTLE', x: 300, y: 150, vx: -1.1, vy: 0, width: 24, height: 24, direction: -1, isGrounded: false, health: 1, state: 'WALKING', stateTimer: 0 },
         { id: '21', type: 'TURTLE', x: 650, y: 150, vx: -1.1, vy: 0, width: 24, height: 24, direction: -1, isGrounded: false, health: 1, state: 'WALKING', stateTimer: 0 },
         { id: '22', type: 'ZOMBIE', x: 1000, y: 150, vx: -1.3, vy: 0, width: 24, height: 28, direction: -1, isGrounded: false, health: 1, state: 'WALKING', stateTimer: 0 },
-        { id: '23', type: 'TURTLE', x: 1400, y: 150, vx: -1.1, vy: 0, width: 24, height: 24, direction: -1, isGrounded: false, health: 1, state: 'WALKING', stateTimer: 0 }
+        { id: '23', type: 'TURTLE', x: 1400, y: 150, vx: -1.1, vy: 0, width: 24, height: 24, direction: -1, isGrounded: false, health: 1, state: 'WALKING', stateTimer: 0 },
+        // Secret wall passage coins and star at cols 74-76
+        { id: 'sec_cave_c1', type: 'COIN', x: 74 * 32, y: 10 * 32, vx: 0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 },
+        { id: 'sec_cave_c2', type: 'COIN', x: 75 * 32, y: 10 * 32, vx: 0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 },
+        { id: 'sec_cave_star', type: 'STAR', x: 76 * 32, y: 9 * 32, vx: 0.8, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'SPAWNING', stateTimer: 0 }
       );
     } else if (selectedStage === '1-3') {
       g.actors.push(
         { id: '30', type: 'ZOMBIE', x: 400, y: 100, vx: -1.4, vy: 0, width: 24, height: 28, direction: -1, isGrounded: false, health: 1, state: 'WALKING', stateTimer: 0 },
         { id: '31', type: 'CREEPER', x: 800, y: 100, vx: 0, vy: 0, width: 24, height: 32, direction: -1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 },
         { id: '32', type: 'TURTLE', x: 1100, y: 100, vx: -1.2, vy: 0, width: 24, height: 24, direction: -1, isGrounded: false, health: 1, state: 'WALKING', stateTimer: 0 },
-        { id: '33', type: 'ZOMBIE', x: 1500, y: 100, vx: -1.4, vy: 0, width: 24, height: 28, direction: -1, isGrounded: false, health: 1, state: 'WALKING', stateTimer: 0 }
+        { id: '33', type: 'ZOMBIE', x: 1500, y: 100, vx: -1.4, vy: 0, width: 24, height: 28, direction: -1, isGrounded: false, health: 1, state: 'WALKING', stateTimer: 0 },
+        // Cloud illusion secret passage rewards at cols 54-55
+        { id: 'sec_sky_c1', type: 'COIN', x: 54 * 32, y: 8 * 32, vx: 0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 },
+        { id: 'sec_sky_c2', type: 'COIN', x: 55 * 32, y: 8 * 32, vx: 0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 }
       );
     } else if (selectedStage === '1-4') {
       // Ender Dragon fortress!
@@ -524,6 +597,283 @@ export default function GameCanvas({
         x, y, vx, vy, size, life, maxLife: life, color, type
       });
     }
+  };
+
+  const enterSecretArea = () => {
+    const g = gameRef.current;
+    if (g.inSecretArea) return;
+
+    // Save current status of main overworld
+    g.secretSavedState = {
+      blocks: [...g.blocks],
+      actors: [...g.actors],
+      playerX: g.player.x,
+      playerY: g.player.y,
+      cameraX: g.cameraX,
+      worldCols: g.worldCols
+    };
+
+    audio.playSFX('POWER_UP');
+
+    // Setup Secret Area Stage configurations
+    g.inSecretArea = true;
+    g.worldCols = 40; // Shorter boundary
+    
+    // Fill the Secret Subspace Map
+    const bArray: Block[] = [];
+    const rows = g.worldRows;
+    const cols = g.worldCols;
+
+    for (let c = 0; c < cols; c++) {
+      for (let r = 0; r < rows; r++) {
+        let blockType: BlockType = 'AIR';
+        let itemType: ActorType | undefined = undefined;
+
+        // Shared boundaries
+        if (c === 0 && r >= 3) blockType = 'BEDROCK';
+        if (c === cols - 1 && r >= 3) blockType = 'BEDROCK';
+
+        // Shared Standard Pipes
+        // Entrance: column 4 & 5
+        if (c === 4) {
+          if (r === 11 || r === 12) blockType = 'PIPE_BODY_L';
+          if (r === 10) blockType = 'PIPE_TOP_L';
+        }
+        if (c === 5) {
+          if (r === 11 || r === 12) blockType = 'PIPE_BODY_R';
+          if (r === 10) blockType = 'PIPE_TOP_R';
+        }
+
+        // Exit: column 34 & 35
+        if (c === 34) {
+          if (r === 11 || r === 12) blockType = 'PIPE_BODY_L';
+          if (r === 10) blockType = 'PIPE_TOP_L';
+        }
+        if (c === 35) {
+          if (r === 11 || r === 12) blockType = 'PIPE_BODY_R';
+          if (r === 10) blockType = 'PIPE_TOP_R';
+        }
+
+        // STAGE-SPECIFIC DETAILED BLOCK DESIGN MAPS:
+        if (stage === '1-1') {
+          // Sunny Meadow: solid grass floor
+          if (r >= 13) {
+            blockType = 'GRASS';
+          }
+          // Bright bridges
+          if (r === 8 && c >= 10 && c <= 28) {
+            if (c % 4 === 0) {
+              blockType = 'QUESTION_BLOCK';
+              itemType = 'COIN';
+            } else {
+              blockType = 'BRICK';
+            }
+          }
+          if (r === 5 && c >= 14 && c <= 24) {
+            if (c % 3 === 0) {
+              blockType = 'QUESTION_BLOCK';
+              itemType = 'MUSHROOM';
+            } else {
+              blockType = 'BRICK';
+            }
+          }
+
+        } else if (stage === '1-2') {
+          // Amethyst Crystal Caves: solid stone floor, obsidian chunks
+          if (r >= 13) {
+            blockType = 'STONE';
+          }
+          // Breakable coal ores and glowing obsidian structures
+          if (r === 8 && c >= 11 && c <= 27) {
+            if (c === 15 || c === 23) {
+              blockType = 'QUESTION_BLOCK';
+              itemType = 'FLOWER';
+            } else if (c % 2 === 1) {
+              blockType = 'COAL_ORE';
+            } else {
+              blockType = 'BEDROCK';
+            }
+          }
+          // Hidden safe-pocket cavity high up
+          if (r === 4 && c >= 16 && c <= 22) {
+            blockType = 'STONE';
+          }
+
+        } else if (stage === '1-3') {
+          // Cloud Palace Sector: high altitude cloud platforms with large pit of nothingness
+          // Only a small soft fallback deck at bottom
+          if (r >= 13) {
+            if (c >= 3 && c <= 8) blockType = 'BEDROCK';
+            else if (c >= 31 && c <= 36) blockType = 'BEDROCK';
+            else blockType = 'AIR'; // bottomless sky pit!
+          }
+          // Floating cloud bridges at heights
+          if (r === 9 && c >= 9 && c <= 29) {
+            if (c % 5 === 0) {
+              blockType = 'QUESTION_BLOCK';
+              itemType = 'STAR';
+            } else {
+              blockType = 'BRICK';
+            }
+          }
+          // Ultra-high altitude coins bridge
+          if (r === 5 && c >= 12 && c <= 26) {
+            if (c % 2 === 0) {
+              blockType = 'BRICK';
+            }
+          }
+
+        } else if (stage === '1-4') {
+          // Volcanic Magma Chamber: obsidian/netherrack base with hot magma pools
+          if (r >= 13) {
+            if (c >= 12 && c <= 26 && c % 4 !== 0) {
+              blockType = 'LAVA';
+            } else {
+              blockType = 'OBSIDIAN';
+            }
+          }
+          // High structures
+          if (r === 8 && c >= 10 && c <= 28) {
+            if (c % 4 === 0) {
+              blockType = 'QUESTION_BLOCK';
+              itemType = 'STAR';
+            } else {
+              blockType = 'OBSIDIAN';
+            }
+          }
+          if (r === 5 && c >= 15 && c <= 23) {
+            blockType = 'NETHERRACK';
+          }
+        }
+
+        if (blockType !== 'AIR') {
+          bArray.push({
+            x: c,
+            y: r,
+            type: blockType,
+            containsItem: itemType
+          });
+        }
+      }
+    }
+
+    g.blocks = bArray;
+
+    // Build specific rich collectibles and background actors for each secret stage
+    let secActors: Actor[] = [];
+
+    if (stage === '1-1') {
+      secActors = [
+        { id: 'sec_11_mush', type: 'MUSHROOM', x: 14 * 32, y: 7 * 32, vx: 0.8, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'SPAWNING', stateTimer: 0 },
+        // Simple floating gold coins
+        { id: 'sc1_1', type: 'COIN', x: 10 * 32, y: 7 * 32, vx: 0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 },
+        { id: 'sc1_2', type: 'COIN', x: 11 * 32, y: 7 * 32, vx: 0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 },
+        { id: 'sc1_3', type: 'COIN', x: 12 * 32, y: 7 * 32, vx: 0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 },
+        { id: 'sc1_4', type: 'COIN', x: 15 * 32, y: 4 * 32, vx: 0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 },
+        { id: 'sc1_5', type: 'COIN', x: 17 * 32, y: 4 * 32, vx: 0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 },
+        { id: 'sc1_6', type: 'COIN', x: 21 * 32, y: 4 * 32, vx: 0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 },
+        { id: 'sc1_7', type: 'COIN', x: 23 * 32, y: 4 * 32, vx: 0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 },
+        { id: 'sc1_8', type: 'COIN', x: 25 * 32, y: 7 * 32, vx: 0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 },
+        { id: 'sc1_9', type: 'COIN', x: 27 * 32, y: 7 * 32, vx: 0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 }
+      ];
+    } else if (stage === '1-2') {
+      secActors = [
+        { id: 'sec_12_flw', type: 'FLOWER', x: 16 * 32, y: 7 * 32, vx: 0.0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 },
+        // Slower moving turtle under crystals
+        { id: 'sec_12_turt', type: 'TURTLE', x: 20 * 32, y: 7 * 32, vx: -0.6, vy: 0, width: 24, height: 24, direction: -1, isGrounded: true, health: 1, state: 'WALKING', stateTimer: 0 },
+        // Rich high gold chest line
+        { id: 'sc2_1', type: 'COIN', x: 17 * 32, y: 3 * 32, vx: 0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 },
+        { id: 'sc2_2', type: 'COIN', x: 18 * 32, y: 3 * 32, vx: 0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 },
+        { id: 'sc2_3', type: 'COIN', x: 19 * 32, y: 3 * 32, vx: 0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 },
+        { id: 'sc2_4', type: 'COIN', x: 20 * 32, y: 3 * 32, vx: 0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 },
+        { id: 'sc2_5', type: 'COIN', x: 21 * 32, y: 3 * 32, vx: 0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 },
+        { id: 'sc3_1', type: 'COIN', x: 12 * 32, y: 7 * 32, vx: 0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 },
+        { id: 'sc3_2', type: 'COIN', x: 26 * 32, y: 7 * 32, vx: 0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 }
+      ];
+    } else if (stage === '1-3') {
+      secActors = [
+        { id: 'sec_13_star', type: 'STAR', x: 18 * 32, y: 4 * 32, vx: 0.9, vy: -2, width: 24, height: 24, direction: 1, isGrounded: false, health: 1, state: 'SPAWNING', stateTimer: 0 },
+        // Floating high-tension collectibles requiring timing and double jumping
+        { id: 'sc3_v1', type: 'COIN', x: 12 * 32, y: 4 * 32, vx: 0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 },
+        { id: 'sc3_v2', type: 'COIN', x: 14 * 32, y: 4 * 32, vx: 0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 },
+        { id: 'sc3_v3', type: 'COIN', x: 16 * 32, y: 4 * 32, vx: 0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 },
+        { id: 'sc3_v4', type: 'COIN', x: 22 * 32, y: 4 * 32, vx: 0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 },
+        { id: 'sc3_v5', type: 'COIN', x: 24 * 32, y: 4 * 32, vx: 0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 },
+        { id: 'sc3_v6', type: 'COIN', x: 26 * 32, y: 4 * 32, vx: 0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 },
+        // High air clouds coins
+        { id: 'sc3_h1', type: 'COIN', x: 13 * 32, y: 8 * 32, vx: 0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 },
+        { id: 'sc3_h2', type: 'COIN', x: 19 * 32, y: 8 * 32, vx: 0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 },
+        { id: 'sc3_h3', type: 'COIN', x: 25 * 32, y: 8 * 32, vx: 0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 }
+      ];
+    } else {
+      // Stage 1-4: The Nether Lava vault (Max rewards, extreme risks)
+      secActors = [
+        { id: 'sec_14_mush', type: 'MUSHROOM', x: 16 * 32, y: 4 * 32, vx: 0.8, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'SPAWNING', stateTimer: 0 },
+        { id: 'sec_14_flw', type: 'FLOWER', x: 22 * 32, y: 4 * 32, vx: 0.0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 },
+        // A sneaky active creeper guard
+        { id: 'sec_14_crepe', type: 'CREEPER', x: 19 * 32, y: 12 * 32, vx: 0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'IDLE', stateTimer: 0 },
+        // Multi gold rows crossing the dangerous hot springs
+        { id: 'sc4_1', type: 'COIN', x: 13 * 32, y: 7 * 32, vx: 0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 },
+        { id: 'sc4_2', type: 'COIN', x: 14 * 32, y: 7 * 32, vx: 0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 },
+        { id: 'sc4_3', type: 'COIN', x: 15 * 32, y: 7 * 32, vx: 0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 },
+        { id: 'sc4_4', type: 'COIN', x: 17 * 32, y: 7 * 32, vx: 0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 },
+        { id: 'sc4_5', type: 'COIN', x: 23 * 32, y: 7 * 32, vx: 0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 },
+        { id: 'sc4_6', type: 'COIN', x: 24 * 32, y: 7 * 32, vx: 0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 },
+        { id: 'sc4_7', type: 'COIN', x: 25 * 32, y: 7 * 32, vx: 0, vy: 0, width: 24, height: 24, direction: 1, isGrounded: true, health: 1, state: 'STATIONARY', stateTimer: 0 }
+      ];
+    }
+
+    g.actors = secActors;
+
+    // Place the player neatly onto the entrance pipe
+    g.player.x = 4.3 * 32;
+    g.player.y = 8 * 32;
+    g.player.vx = 0;
+    g.player.vy = 0;
+    g.cameraX = 0;
+
+    spawnParticles(g.player.x + 14, g.player.y + 14, 'PORTAL', '#22c55e', 45);
+  };
+
+  const exitSecretArea = () => {
+    const g = gameRef.current;
+    if (!g.inSecretArea || !g.secretSavedState) return;
+
+    // Retrieve and restore saved overworld setup state
+    const saved = g.secretSavedState;
+    g.blocks = saved.blocks;
+    g.actors = saved.actors;
+    g.worldCols = saved.worldCols;
+
+    audio.playSFX('SPAWN');
+
+    // Calculate downstream escape warp pipeline
+    let targetX = saved.playerX + 16 * 32;
+    let targetY = saved.playerY;
+
+    if (stage === '1-1') {
+      targetX = 68.3 * 32; // exit pipe column y=11
+      targetY = 9 * 32;
+    } else if (stage === '1-2') {
+      targetX = 80.3 * 32; // exit pipe column y=10
+      targetY = 8 * 32;
+    } else if (stage === '1-3') {
+      targetX = 60.3 * 32; // exit pipe column y=10
+      targetY = 8 * 32;
+    } else if (stage === '1-4') {
+      targetX = 65.3 * 32; // exit pipe column y=10
+      targetY = 8 * 32;
+    }
+
+    g.player.x = targetX;
+    g.player.y = targetY;
+    g.player.vx = 0;
+    g.player.vy = -3.5; // Jump out elegantly
+    g.cameraX = Math.max(0, targetX - 250);
+    g.inSecretArea = false;
+    g.secretSavedState = null;
+
+    spawnParticles(g.player.x + 14, g.player.y + 14, 'SHINE', '#10b981', 45);
   };
 
   // main loops handler using standard Canvas Context
@@ -634,6 +984,30 @@ export default function GameCanvas({
     p.isGrounded = false;
     resolveCollisionsVertical();
 
+    // Check warp pipelines (Green Channel secret hidden level entrance & exit)
+    if (g.keys.down && p.isGrounded) {
+      const gridX = Math.floor((p.x + p.width / 2) / g.gridSize);
+      const gridY = Math.floor((p.y + p.height + 2) / g.gridSize);
+      const blockStand = getBlockAtGrid(gridX, gridY);
+      
+      const isPipeBlock = blockStand && (
+        blockStand.type === 'PIPE_TOP_L' || 
+        blockStand.type === 'PIPE_TOP_R' || 
+        blockStand.type === 'PIPE_BODY_L' || 
+        blockStand.type === 'PIPE_BODY_R'
+      );
+
+      if (isPipeBlock) {
+        if (g.inSecretArea) {
+          if (gridX >= 32) {
+            exitSecretArea();
+          }
+        } else {
+          enterSecretArea();
+        }
+      }
+    }
+
     // Check player bottomless pit death
     const deathY = g.worldRows * g.gridSize;
     if (p.y > deathY) {
@@ -651,6 +1025,73 @@ export default function GameCanvas({
     const canvasWidth = canvasRef.current?.width || 800;
     const worldWidth = g.worldCols * g.gridSize;
     g.cameraX = Math.max(0, Math.min(worldWidth - canvasWidth, p.x - canvasWidth / 3.3));
+  };
+
+  // Helper check for core solid physical tiles, allowing bypass for secret passable block corridors
+  const isBlockSolid = (block: Block): boolean => {
+    // Walkthrough secret fake stones in Stage 1-2 Cave
+    if (stage === '1-2') {
+      if ((block.x === 72 || block.x === 73) && (block.y === 9 || block.y === 10)) {
+        return false;
+      }
+    }
+    // Walkthrough secret sky cloud in Stage 1-3
+    if (stage === '1-3') {
+      if ((block.x === 52 || block.x === 53) && (block.y === 8 || block.y === 9)) {
+        return false;
+      }
+    }
+    return isSolid(block.type);
+  };
+
+  // Check for hitting space from below to spawn a hidden lucky question block!
+  const checkAndSpawnInvisibleBlock = (col: number, row: number): boolean => {
+    const g = gameRef.current;
+    if (g.inSecretArea) return false; // No invisible blocks inside secret rooms
+
+    let match = false;
+    let awardItem: ActorType = 'COIN';
+
+    if (stage === '1-1') {
+      // 1-1 invisible blocks
+      if (col === 44 && row === 6) { match = true; awardItem = 'STAR';     } // High value hidden star!
+      if (col === 112 && row === 6) { match = true; awardItem = 'COIN';    } // Hidden coin block!
+    } else if (stage === '1-2') {
+      // 1-2 invisible blocks
+      if (col === 48 && row === 5) { match = true; awardItem = 'FLOWER';   } // Hidden cave fire power!
+      if (col === 96 && row === 4) { match = true; awardItem = 'COIN';     } // Hidden mining coin block
+    } else if (stage === '1-3') {
+      // 1-3 invisible blocks
+      if (col === 82 && row === 4) { match = true; awardItem = 'MUSHROOM'; } // High air hidden mushroom
+      if (col === 115 && row === 4) { match = true; awardItem = 'STAR';    } // Sky runner star
+    } else if (stage === '1-4') {
+      // 1-4 invisible blocks
+      if (col === 46 && row === 6) { match = true; awardItem = 'COIN';     } // Fiery shortcut block
+      if (col === 92 && row === 5) { match = true; awardItem = 'FLOWER';   } // Extra dragon fire power!
+    }
+
+    if (match) {
+      // Create a new QUESTION_BLOCK
+      const newBlock: Block = {
+        x: col,
+        y: row,
+        type: 'QUESTION_BLOCK',
+        containsItem: awardItem,
+        isRevealed: true
+      };
+      
+      // Inject to blocks list so it becomes a solid tile instantly!
+      g.blocks.push(newBlock);
+
+      // Trigger the standard hit behavior
+      handleBlockHit(newBlock);
+
+      // Spawn portal blue-shine indicator particles
+      spawnParticles(col * g.gridSize + 16, row * g.gridSize + 16, 'PORTAL', '#38bdf8', 20);
+      return true;
+    }
+
+    return false;
   };
 
   // Horizontal Collision Solver
@@ -672,13 +1113,13 @@ export default function GameCanvas({
     for (let r = topRow; r <= bottomRow; r++) {
       // Left side collision
       const blockL = getBlockAtGrid(leftCol, r);
-      if (blockL && isSolid(blockL.type)) {
+      if (blockL && isBlockSolid(blockL)) {
         p.x = (leftCol + 1) * g.gridSize;
         p.vx = 0;
       }
       // Right side collision
       const blockR = getBlockAtGrid(rightCol, r);
-      if (blockR && isSolid(blockR.type)) {
+      if (blockR && isBlockSolid(blockR)) {
         p.x = rightCol * g.gridSize - p.width;
         p.vx = 0;
       }
@@ -698,7 +1139,7 @@ export default function GameCanvas({
     for (let c = leftCol; c <= rightCol; c++) {
       // Landing on block top
       const blockB = getBlockAtGrid(c, bottomRow);
-      if (blockB && (isSolid(blockB.type) || blockB.type === 'LAVA')) {
+      if (blockB && (isBlockSolid(blockB) || blockB.type === 'LAVA')) {
         // Lava causes injury or death
         if (blockB.type === 'LAVA') {
           handleHazardDamage();
@@ -713,11 +1154,18 @@ export default function GameCanvas({
 
       // Hitting block from below
       const blockT = getBlockAtGrid(c, topRow);
-      if (blockT && isSolid(blockT.type) && p.vy < 0) {
+      if (blockT && isBlockSolid(blockT) && p.vy < 0) {
         // Bump coordinates
         p.y = (topRow + 1) * g.gridSize;
         p.vy = 0.5; // kick down speed
         handleBlockHit(blockT);
+      } else if (!blockT && p.vy < 0) {
+        // Check for hitting blank space underneath an invisible lucky block!
+        const revealed = checkAndSpawnInvisibleBlock(c, topRow);
+        if (revealed) {
+          p.y = (topRow + 1) * g.gridSize;
+          p.vy = 0.5; // bounce speed
+        }
       }
     }
   };
@@ -938,6 +1386,16 @@ export default function GameCanvas({
           audio.playSFX('POWER_UP');
           onScoreUpdate(g.score, g.coins, g.lives, g.marioForm, g.isStarActive);
           return false; // delete star
+        }
+
+        if (act.type === 'COIN') {
+          g.coins += 1;
+          g.score += 200;
+          audio.playSFX('COIN');
+          onScoreUpdate(g.score, g.coins, g.lives, g.marioForm, g.isStarActive);
+          // Spawn nice sparkling gold particles
+          spawnParticles(act.x + 12, act.y + 12, 'SHINE', '#ffd700', 10);
+          return false; // delete coin from actors list
         }
 
         // IS IT AN ENEMY MOB?
@@ -1318,7 +1776,45 @@ export default function GameCanvas({
     const height = canvas.height;
 
     // 1) BACKGROUND AMBIENT RENDERS
-    if (stage === '1-2') {
+    if (g.inSecretArea) {
+      if (stage === '1-1') {
+        ctx.fillStyle = '#05180c'; // Emerald green backdrop
+        ctx.fillRect(0, 0, width, height);
+        ctx.fillStyle = '#0d321c';
+        for (let i = 0; i < 20; i++) {
+          const cx = (i * 149) % (width + 100) - g.cameraX * 0.2;
+          const cy = (i * 81) % height;
+          ctx.fillRect(cx, cy, 32, 12);
+        }
+      } else if (stage === '1-2') {
+        ctx.fillStyle = '#0c0714'; // Dark violet gem mine
+        ctx.fillRect(0, 0, width, height);
+        ctx.fillStyle = '#1c122b';
+        for (let i = 0; i < 20; i++) {
+          const cx = (i * 149) % (width + 100) - g.cameraX * 0.2;
+          const cy = (i * 81) % height;
+          ctx.fillRect(cx, cy, 24, 24);
+        }
+      } else if (stage === '1-3') {
+        ctx.fillStyle = '#061624'; // Cozy midnight cyan
+        ctx.fillRect(0, 0, width, height);
+        ctx.fillStyle = '#0f2942';
+        for (let i = 0; i < 20; i++) {
+          const cx = (i * 149) % (width + 100) - g.cameraX * 0.2;
+          const cy = (i * 81) % height;
+          ctx.fillRect(cx, cy, 64, 16);
+        }
+      } else {
+        ctx.fillStyle = '#210505'; // Lava dark red chamber
+        ctx.fillRect(0, 0, width, height);
+        ctx.fillStyle = '#3a0c0c';
+        for (let i = 0; i < 20; i++) {
+          const cx = (i * 149) % (width + 100) - g.cameraX * 0.2;
+          const cy = (i * 81) % height;
+          ctx.fillRect(cx, cy, 40, 20);
+        }
+      }
+    } else if (stage === '1-2') {
       // Underground Dark Cave
       ctx.fillStyle = '#101015';
       ctx.fillRect(0, 0, width, height);
@@ -1575,6 +2071,30 @@ export default function GameCanvas({
         ctx.fillRect(act.x + 4, act.y + 4, 16, 16);
       }
 
+      // SPINNING GOLD COIN ACTOR (For secrets area)
+      else if (act.type === 'COIN') {
+        const spin = Math.floor(Date.now() / 150) % 3;
+        ctx.fillStyle = '#facc15';
+        ctx.strokeStyle = '#ca8a04';
+        ctx.lineWidth = 1.5;
+        if (spin === 0) {
+          ctx.fillRect(act.x + 5, act.y, 14, 24);
+          ctx.strokeRect(act.x + 5, act.y, 14, 24);
+          ctx.fillStyle = '#fef08a';
+          ctx.fillRect(act.x + 8, act.y + 4, 8, 16);
+        } else if (spin === 1) {
+          ctx.fillRect(act.x + 9, act.y, 6, 24);
+          ctx.strokeRect(act.x + 9, act.y, 6, 24);
+          ctx.fillStyle = '#fef08a';
+          ctx.fillRect(act.x + 11, act.y + 4, 2, 16);
+        } else {
+          ctx.fillRect(act.x + 2, act.y, 20, 24);
+          ctx.strokeRect(act.x + 2, act.y, 20, 24);
+          ctx.fillStyle = '#fef08a';
+          ctx.fillRect(act.x + 6, act.y + 4, 12, 16);
+        }
+      }
+
     });
 
     // 5) ENDER DRAGON BOSS HUGE MULTI-CUBE RENDER (Stage 1-4 End)
@@ -1671,6 +2191,43 @@ export default function GameCanvas({
     }
 
     ctx.restore(); // reset camera translations
+
+    // Draw Screen-persistent Screen HUD / overlays
+    if (g.inSecretArea) {
+      ctx.save();
+      let overlayTitle = '⚡ SECRET MEADOWS / 绿色草场';
+      let boxColor = 'rgba(9, 79, 31, 0.85)';
+      let borderColor = '#10b981';
+      let textColor = '#34d399';
+
+      if (stage === '1-2') {
+        overlayTitle = '💜 AMETHYST GEODE CAVE / 紫晶矿洞';
+        boxColor = 'rgba(38, 16, 59, 0.85)';
+        borderColor = '#a855f7';
+        textColor = '#d8b4fe';
+      } else if (stage === '1-3') {
+        overlayTitle = '☁️ CLOUD PALACE vault / 云顶浮阁';
+        boxColor = 'rgba(12, 45, 62, 0.85)';
+        borderColor = '#0ea5e9';
+        textColor = '#7dd3fc';
+      } else if (stage === '1-4') {
+        overlayTitle = '🔥 NETHER VOLCANIC VAULT / 熔岩秘穴';
+        boxColor = 'rgba(61, 10, 10, 0.85)';
+        borderColor = '#f43f5e';
+        textColor = '#fca5a5';
+      }
+
+      ctx.fillStyle = boxColor;
+      ctx.fillRect(16, 16, 260, 26);
+      ctx.strokeStyle = borderColor;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(16, 16, 260, 26);
+
+      ctx.fillStyle = textColor;
+      ctx.font = '10px "JetBrains Mono", var(--font-mono), monospace';
+      ctx.fillText(overlayTitle, 26, 32);
+      ctx.restore();
+    }
   };
 
   // Dedicated draw engine for large Minecraft blocky Ender Dragon

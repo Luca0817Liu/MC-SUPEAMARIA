@@ -115,8 +115,8 @@ export default function GameOverMenu({
   };
 
   return (
-    <div className="absolute inset-0 z-40 bg-[#7299ff]/85 flex items-center justify-center p-4 overflow-y-auto font-sans">
-      <div className="w-full max-w-md bg-[#3d3d3d] border-8 border-white p-6 sm:p-8 shadow-[12px_12px_0px_0px_rgba(0,0,0,0.5)] text-center relative overflow-hidden">
+    <div className="absolute inset-0 z-40 bg-[#7299ff]/85 flex items-center justify-center p-2 sm:p-4 overflow-y-auto font-sans">
+      <div className="w-full max-w-md bg-[#3d3d3d] border-4 sm:border-8 border-white p-4 sm:p-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,0.5)] sm:shadow-[12px_12px_0px_0px_rgba(0,0,0,0.5)] text-center relative overflow-hidden">
         
         {/* Minecraft top brick stripes */}
         <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#ff3333] via-[#ffd700] to-[#4caf50]"></div>
@@ -202,35 +202,35 @@ export default function GameOverMenu({
         )}
 
         {/* Stats Panel */}
-        <div className="bg-black/30 border border-white/20 p-4 text-left grid grid-cols-2 gap-y-3 gap-x-4 mb-6">
+        <div className="bg-black/30 border border-white/20 p-3 sm:p-4 text-left grid grid-cols-2 gap-y-2 sm:gap-y-3 gap-x-4 mb-4 sm:mb-6">
           <div>
-            <span className="text-[10px] font-retro text-gray-400 block">CURRENT WORLD</span>
-            <span className="text-sm font-bold text-white font-mono flex items-center gap-1">
+            <span className="text-[9px] sm:text-[10px] font-retro text-gray-400 block">CURRENT WORLD</span>
+            <span className="text-xs sm:text-sm font-bold text-white font-mono flex items-center gap-1">
               <span>Stage {clearedStage}</span>
             </span>
           </div>
 
           <div>
-            <span className="text-[10px] font-retro text-gray-400 block">COINS COLLECTED</span>
-            <div className="flex items-center gap-1.5 mt-0.5">
-              <div className="w-4 h-4 bg-[#ffd700] border border-[#b8860b] shadow-[inset_-1px_-1px_0_#daa520] shrink-0"></div>
-              <span className="text-sm font-bold text-[#ffd700] font-mono leading-none">
+            <span className="text-[9px] sm:text-[10px] font-retro text-gray-400 block">COINS COLLECTED</span>
+            <div className="flex items-center gap-1 sm:gap-1.5 mt-0.5">
+              <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 bg-[#ffd700] border border-[#b8860b] shadow-[inset_-1px_-1px_0_#daa520] shrink-0"></div>
+              <span className="text-xs sm:text-sm font-bold text-[#ffd700] font-mono leading-none">
                 {coins} Coins
               </span>
             </div>
           </div>
 
-          <div className="col-span-2 border-t border-white/10 pt-2">
+          <div className="col-span-2 border-t border-white/10 pt-1.5 sm:pt-2">
             <div className="flex justify-between items-center">
               <div>
-                <span className="text-[10px] font-retro text-gray-400 block">TOTAL SCORE</span>
-                <span className="text-lg font-retro text-[#38bdf8] block font-bold drop-shadow-[1px_1px_0_rgba(0,0,0,0.8)]">
+                <span className="text-[9px] sm:text-[10px] font-retro text-gray-400 block">TOTAL SCORE</span>
+                <span className="text-sm sm:text-lg font-retro text-[#38bdf8] block font-bold drop-shadow-[1px_1px_0_rgba(0,0,0,0.8)]">
                   {score.toString().padStart(6, '0')}
                 </span>
               </div>
               <div className="text-right">
-                <span className="text-[10px] font-retro text-gray-400 block">BEST HIGHSCORE</span>
-                <span className="text-sm font-retro text-[#ffd700] block font-bold">
+                <span className="text-[9px] sm:text-[10px] font-retro text-gray-400 block">BEST HIGHSCORE</span>
+                <span className="text-xs sm:text-sm font-retro text-[#ffd700] block font-bold">
                   {highscore.toString().padStart(6, '0')}
                 </span>
               </div>
@@ -239,7 +239,7 @@ export default function GameOverMenu({
         </div>
 
         {/* Flavor Fun description */}
-        <p className="text-xs text-gray-300 font-mono text-center italic mb-8 border-l-2 border-white/30 pl-2 leading-relaxed min-h-[2rem]">
+        <p className="text-[11px] sm:text-xs text-gray-300 font-mono text-center italic mb-5 sm:mb-8 border-l-2 border-white/30 pl-2 leading-relaxed min-h-[2rem]">
           {displayedText || '\u00a0'}
         </p>
 

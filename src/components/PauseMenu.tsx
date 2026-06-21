@@ -21,7 +21,7 @@ export default function PauseMenu({ onResume, onRestart, onHome }: PauseMenuProp
 
   return (
     <div className="absolute inset-0 z-40 bg-[#7299ff]/75 flex items-center justify-center p-4 backdrop-blur-xs">
-      <div className="w-full max-w-sm bg-[#3d3d3d] border-8 border-white p-6 shadow-[12px_12px_0px_0px_rgba(0,0,0,0.5)] text-center">
+      <div className="w-full max-w-sm bg-[#3d3d3d] border-4 sm:border-8 border-white p-4 sm:p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,0.5)] sm:shadow-[12px_12px_0px_0px_rgba(0,0,0,0.5)] text-center">
         {/* Title */}
         <div className="mb-6">
           <span className="block font-retro text-xl text-[#ffd700] tracking-wider animate-[pulse_1.5s_infinite] drop-shadow-[2px_2px_0px_#000]">

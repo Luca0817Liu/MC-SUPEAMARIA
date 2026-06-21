@@ -27,13 +27,17 @@ export default function App() {
   // High score persistent state
   const [highscore, setHighscore] = useState(0);
   const [isNewHighscore, setIsNewHighscore] = useState(false);
+  const [showVirtualControls, setShowVirtualControls] = useState(false);
 
   // Load highscore from localStorage on initialization
+  // Also detect touch screen capability to set virtual controls state
   useEffect(() => {
     const savedHighScore = localStorage.getItem('minecraft_mario_highscore');
     if (savedHighScore) {
       setHighscore(parseInt(savedHighScore, 10));
     }
+    const isTouch = window.matchMedia('(pointer: coarse)').matches || ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+    setShowVirtualControls(isTouch);
   }, []);
 
   // Update highscore if current score exceeds it
@@ -144,7 +148,7 @@ export default function App() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#7299ff] text-white flex flex-col justify-between select-none relative font-sans overflow-hidden border-8 border-[#3d3d3d]">
+    <div className="w-full min-h-screen bg-[#7299ff] text-white flex flex-col justify-between select-none relative font-sans overflow-hidden border-4 sm:border-8 border-[#3d3d3d]">
       
       {/* 1) MAIN HOME MENU SCREEN STATE */}
       {gameState === 'START' && (
@@ -158,7 +162,7 @@ export default function App() {
 
       {/* 2) MAIN GAMEPLAY VIEW (SCREENS AND HUD) */}
       {(gameState === 'PLAYING' || gameState === 'PAUSED' || gameState === 'GAMEOVER' || gameState === 'VICTORY') && (
-        <div className="flex-1 flex flex-col items-center justify-center p-2 sm:p-4 relative">
+        <div className="flex-1 flex flex-col items-center justify-center p-1 sm:p-4 relative">
           
           {/* Subtle retro pixelated decorative clouds in background for Vibrant Sky theme */}
           <div className="absolute inset-x-0 top-0 bottom-0 overflow-hidden pointer-events-none z-0">
@@ -167,30 +171,30 @@ export default function App() {
           </div>
 
           {/* Header HUD panel matching the Vibrant Palette Theme */}
-          <div className="w-full max-w-4xl bg-[#3d3d3d] border-4 border-white p-3.5 shadow-[8px_8px_0px_rgba(0,0,0,0.4)] mb-3 flex flex-col gap-2.5 relative z-10">
+          <div className="w-full max-w-4xl bg-[#3d3d3d] border-2 sm:border-4 border-white p-2 sm:p-3.5 shadow-[4px_4px_0px_rgba(0,0,0,0.4)] sm:shadow-[8px_8px_0px_rgba(0,0,0,0.4)] mb-2 sm:mb-3 flex flex-col gap-2 relative z-10">
             
-            <div className="flex justify-between items-center text-[11px] sm:text-xs">
+            <div className="flex justify-between items-center text-[10px] sm:text-xs">
               
               {/* Score section */}
               <div className="flex flex-col drop-shadow-[2px_2px_0_rgba(0,0,0,0.5)]">
-                <span className="font-retro text-gray-300 text-[8px] sm:text-[9px] tracking-wide">MARIO SCORE</span>
-                <span className="font-retro text-[#ffd700] text-sm sm:text-base tracking-widest leading-none font-bold">
+                <span className="font-retro text-gray-300 text-[7px] sm:text-[8px] tracking-wide">MARIO SCORE</span>
+                <span className="font-retro text-[#ffd700] text-xs sm:text-base tracking-widest leading-none font-bold">
                   {score.toString().padStart(7, '0')}
                 </span>
               </div>
 
               {/* Coins tally with the design's signature Custom Voxel gold coin backing */}
-              <div className="flex items-center gap-2 drop-shadow-[2px_2px_0_rgba(0,0,0,0.5)] bg-black/35 px-2.5 py-1 border border-white/20">
-                <div className="w-4 h-4 sm:w-5 sm:h-5 bg-[#ffd700] border-2 border-[#b8860b] shadow-[inset_-2px_-2px_0_#daa520] shrink-0"></div>
-                <span className="font-retro text-white text-xs sm:text-sm font-bold">
+              <div className="flex items-center gap-1 sm:gap-2 drop-shadow-[2px_2px_0_rgba(0,0,0,0.5)] bg-black/35 px-1.5 sm:px-2.5 py-0.5 sm:py-1 border border-white/20">
+                <div className="w-3.5 h-3.5 sm:w-5 sm:h-5 bg-[#ffd700] border border-[#b8860b] shadow-[inset_-2px_-2px_0_#daa520] shrink-0"></div>
+                <span className="font-retro text-white text-[10px] sm:text-sm font-bold">
                   x{coins.toString().padStart(2, '0')}
                 </span>
               </div>
 
               {/* Stage Progress */}
-              <div className="flex items-center gap-1.5 px-3 py-1 bg-black/40 border-2 border-[#ffd700] text-[#ffd700] font-retro text-[9px] sm:text-[10px] shadow-[2px_2px_0px_rgba(0,0,0,0.3)]">
-                <Layers className="w-3.5 h-3.5 shrink-0 text-[#ffd700]" />
-                <span className="font-bold">WORLD {currentStage}</span>
+              <div className="flex items-center gap-1.5 px-2 py-0.5 sm:py-1 bg-black/40 border sm:border-2 border-[#ffd700] text-[#ffd700] font-retro text-[8px] sm:text-[10px] shadow-[2px_2px_0px_rgba(0,0,0,0.3)]">
+                <Layers className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 text-[#ffd700]" />
+                <span className="font-bold">W-{currentStage}</span>
               </div>
 
               {/* Status form badges */}
@@ -215,13 +219,13 @@ export default function App() {
               </div>
 
               {/* Health Hearts */}
-              <div className="flex items-center gap-1.5 shrink-0 bg-black/25 px-2 py-0.5 border border-white/10">
+              <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 bg-black/25 px-1.5 py-0.5 border border-white/10">
                 <span className="font-retro text-red-400 text-[9px] hidden sm:inline font-bold">LIVES:</span>
                 <div className="flex gap-0.5">
                   {Array.from({ length: 3 }).map((_, i) => (
                     <Heart
                       key={i}
-                      className={`w-4 h-4 sm:w-5 sm:h-5 drop-shadow-[1px_1px_0_rgba(0,0,0,0.6)] ${
+                      className={`w-3.5 h-3.5 sm:w-5 sm:h-5 drop-shadow-[1px_1px_0_rgba(0,0,0,0.6)] ${
                         i < lives ? 'text-red-500 fill-red-500 animate-[pulse_1.5s_infinite]' : 'text-zinc-600 fill-zinc-700'
                       }`}
                     />
@@ -232,18 +236,32 @@ export default function App() {
             </div>
 
             {/* Sub utility details bar with custom white translucent overlays */}
-            <div className="flex justify-between items-center border-t border-white/25 pt-2 text-[10px] text-gray-300 font-mono">
+            <div className="flex justify-between items-center border-t border-white/25 pt-2 text-[9px] sm:text-[10px] text-gray-300 font-mono">
               <div className="flex gap-3">
                 <span className="hidden md:inline text-white/90 font-semibold">⌨️ Controls: [WASD] Move | [Space/Up] Fly/DoubleJump | [X] Fireball</span>
-                <span className="md:hidden text-white/90 font-semibold">📱 触摸底部虚拟遥杆 & A/B键开启极速冒险</span>
+                <span className="md:hidden text-white/90 font-semibold text-[8px]">📱 点击右边 📱 键自定虚拟操控面盘</span>
               </div>
               
               {/* Play buttons following the design's hover style */}
-              <div className="flex items-center gap-2 pointer-events-auto">
+              <div className="flex items-center gap-1 sm:gap-2 pointer-events-auto">
+                <button
+                  id="header_controls_btn"
+                  onClick={() => {
+                    audio.playSFX('CLICK');
+                    setShowVirtualControls(prev => !prev);
+                  }}
+                  className={`p-1 px-1.5 text-white font-retro text-[8px] border shrink-0 cursor-pointer shadow-[2px_2px_0_rgba(0,0,0,0.3)] active:scale-95 transition-all ${
+                    showVirtualControls ? 'bg-amber-600 border-amber-300 font-bold' : 'bg-white/10 border-white/50 hover:bg-white/20'
+                  }`}
+                  title="Toggle Virtual Touchscreen Buttons"
+                >
+                  📱 {showVirtualControls ? '键ON' : '键OFF'}
+                </button>
+
                 <button
                   id="header_pause_btn"
                   onClick={handlePauseToggle}
-                  className="px-3 py-1 bg-white/10 hover:bg-white/20 text-white font-retro text-[8px] border-2 border-white/50 active:translate-y-0.5 shrink-0 cursor-pointer shadow-[2px_2px_0_rgba(0,0,0,0.3)]"
+                  className="px-1.5 sm:px-3 py-1 bg-white/10 hover:bg-white/20 text-white font-retro text-[8px] border cursor-pointer active:translate-y-0.5 shrink-0 shadow-[2px_2px_0_rgba(0,0,0,0.3)]"
                 >
                   {gameState === 'PAUSED' ? '▶ RESUME' : '|| PAUSE'}
                 </button>
@@ -251,10 +269,10 @@ export default function App() {
                 <button
                   id="header_mute_btn"
                   onClick={handleToggleMute}
-                  className="p-1 px-1.5 bg-white/10 hover:bg-white/20 text-white border-2 border-white/50 active:scale-95 cursor-pointer shadow-[2px_2px_0_rgba(0,0,0,0.3)]"
+                  className="p-1 px-1.5 bg-white/10 hover:bg-white/20 text-white border active:scale-95 cursor-pointer shadow-[2px_2px_0_rgba(0,0,0,0.3)]"
                   title="Toggle Audio"
                 >
-                  {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                  {isMuted ? <VolumeX className="w-3 sm:w-3.5 h-3 sm:h-3.5" /> : <Volume2 className="w-3 sm:w-3.5 h-3 sm:h-3.5" />}
                 </button>
               </div>
             </div>
@@ -319,11 +337,13 @@ export default function App() {
           </div>
 
           {/* Virtual buttons helper on responsive screen sizes */}
-          <Controls
-            onPress={handleVirtualKeyPress}
-            onPauseToggle={handlePauseToggle}
-            marioForm={marioForm}
-          />
+          {showVirtualControls && (
+            <Controls
+              onPress={handleVirtualKeyPress}
+              onPauseToggle={handlePauseToggle}
+              marioForm={marioForm}
+            />
+          )}
 
         </div>
       )}
